@@ -1,1 +1,16 @@
+## HealerCoachPlus.toc
 
+```toc
+## Interface: 110200
+## Title: HealerCoachPlus
+## Notes: Mythic+ healer coaching: track raid CDs, analyze healing stress windows, suggest missed CDs, and adapt stat weights per pull.
+## Author: You + GPT-5 Thinking
+## Version: 0.1.0
+## SavedVariables: HealerCoachPlusDB
+
+Core.lua
+UI.lua
+SuggestionEngine.lua
+StatsModel.lua
+Learning.lua
+```
