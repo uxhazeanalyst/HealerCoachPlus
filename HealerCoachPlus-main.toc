@@ -9,8 +9,10 @@
 ## SavedVariables: HealerCoachPlusDB
 
 Core.lua
-UI.lua
-SuggestionEngine.lua
 StatsModel.lua
+SuggestionEngine.lua
 Learning.lua
+CombatText.lua
+UI.lua
+
 ```
