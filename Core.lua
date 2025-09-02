@@ -3,11 +3,8 @@
 local addonName, HCP = ...
 HCP.defaults = {}
 
--- Default tracked cooldowns per healer spec
 HCP.DEFAULT_CD_BY_SPEC = {
-  DRUID_Restoration = {
-    "Tranquility", "Flourish", "Ironbark", "Incarnation: Tree of Life", "Nature's Swiftness", "Innervate"
-  },
+  DRUID_Restoration = {"Tranquility", "Flourish", "Ironbark", "Incarnation: Tree of Life", "Nature's Swiftness", "Innervate"},
   PRIEST_Holy = {"Guardian Spirit", "Divine Hymn", "Apotheosis", "Symbol of Hope"},
   PRIEST_Discipline = {"Rapture", "Pain Suppression", "Power Word: Barrier", "Evangelism"},
   PALADIN_Holy = {"Aura Mastery", "Avenging Wrath", "Lay on Hands", "Blessing of Sacrifice", "Divine Shield"},
@@ -19,8 +16,8 @@ HCP.DEFAULT_CD_BY_SPEC = {
 HCP.activeCooldowns = {}
 HCP.dangerWindows = {}
 HCP.healingEvents = {}
+HCP.history = HCP.history or {}
 
--- Dungeon/affix awareness
 local function getActiveAffixes()
   if C_ChallengeMode then
     local _, affixes = C_ChallengeMode.GetActiveKeystoneInfo()
@@ -29,27 +26,21 @@ local function getActiveAffixes()
   return {}
 end
 
--- Danger thresholds
-HCP.baseThreshold = 0.4 -- 40% of group below safe HP
-
+HCP.baseThreshold = 0.4
 function HCP:adaptiveThreshold()
   local affixes = getActiveAffixes()
   for _, affixID in ipairs(affixes) do
-    if affixID == 9 then -- Tyrannical
-      return 0.3
-    elseif affixID == 10 then -- Fortified
-      return 0.5
-    end
+    if affixID == 9 then return 0.3 elseif affixID == 10 then return 0.5 end
   end
   return HCP.baseThreshold
 end
 
--- Healing stress tracking
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:RegisterEvent("CHALLENGE_MODE_COMPLETED")
 
-frame:SetScript("OnEvent", function(_, event)
+frame:SetScript("OnEvent", function(_, event, ...)
   if event == "COMBAT_LOG_EVENT_UNFILTERED" then
     local _, subEvent, _, _, _, _, _, destGUID, _, _, _, spellID, spellName, _, amount = CombatLogGetCurrentEventInfo()
     if subEvent == "SPELL_HEAL" or subEvent == "SPELL_PERIODIC_HEAL" then
@@ -59,10 +50,11 @@ frame:SetScript("OnEvent", function(_, event)
     end
   elseif event == "PLAYER_ENTERING_WORLD" then
     HCP.activeSpec = GetSpecializationInfo(GetSpecialization() or 0)
+  elseif event == "CHALLENGE_MODE_COMPLETED" then
+    HCP:GenerateCoachSummary()
   end
 end)
 
--- Slash commands
 SLASH_HCP1 = "/hcp"
 SlashCmdList["HCP"] = function(msg)
   if msg == "recommend" then
@@ -72,12 +64,12 @@ SlashCmdList["HCP"] = function(msg)
       print(string.format("  %s: %.2f", stat, val))
     end
   elseif msg:match("^history") then
-    local n = tonumber(msg:match("history (%d+)")) or 5
+    local n = tonumber(msg:match("history (%d+)") or 5)
     HCP:PrintHistory(n)
   elseif msg == "ui" then
-    if HCP.HistoryUI then
-      HCP.HistoryUI:Show()
-    end
+    if HCP.HistoryUI then HCP.HistoryUI:Show() end
+  elseif msg == "summary" then
+    HCP:GenerateCoachSummary()
   elseif msg == "debug" then
     HCP.debug = not HCP.debug
     print("HCP Debug:", HCP.debug)
@@ -85,6 +77,6 @@ SlashCmdList["HCP"] = function(msg)
     print("/hcp recommend - show stat recommendations")
     print("/hcp history <n> - show last n pull summaries")
     print("/hcp ui - open history browser")
+    print("/hcp summary - post-dungeon summary report")
   end
 end
-```
