@@ -18,9 +18,8 @@ function HCP:RecommendStats()
   end
 
   for stat, val in pairs(base) do adaptive[stat] = val end
-  if spikeCount > 2 then adaptive["Mastery"] = adaptive["Mastery"] + 0.05 end
-  if deathCount > 0 then adaptive["Versatility"] = adaptive["Versatility"] + 0.05 end
+  if spikeCount > 2 then adaptive[Mastery] = adaptive[Mastery] + 0.05 end
+  if deathCount > 0 then adaptive[Versatility] = adaptive[Versatility] + 0.05 end
 
   return adaptive
 end
-```
