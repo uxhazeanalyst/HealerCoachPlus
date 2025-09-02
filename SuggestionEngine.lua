@@ -5,7 +5,6 @@ local addonName, HCP = ...
 function HCP:AnalyzePull()
   local dangerT = HCP:adaptiveThreshold()
   local report = {}
-
   for _, event in ipairs(HCP.dangerWindows) do
     table.insert(report, event)
   end
